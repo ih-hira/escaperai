@@ -8,7 +8,8 @@ Usage:
 
 import os
 import sys
-from app import app, db
+from app import app
+from database import db
 from models import User, Trip
 
 def init_database():

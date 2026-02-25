@@ -1,6 +1,6 @@
-from app import db
-from datetime import datetime,timezone
-from werkzeug.security import generate_password_hash, check_password_hash
+from database import db
+from datetime import datetime, timezone
+from utils.security import hash_password, verify_password
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -18,12 +18,12 @@ class User(db.Model):
         return f'<User {self.email}>'
     
     def set_password(self, password):
-        """Hash and set the password"""
-        self.password_hash = generate_password_hash(password)
+        """Hash and set the password using secure PBKDF2 with SHA256"""
+        self.password_hash = hash_password(password)
     
     def check_password(self, password):
-        """Verify password against hash"""
-        return check_password_hash(self.password_hash, password)
+        """Verify password against stored hash"""
+        return verify_password(password, self.password_hash)
     
     def to_dict(self):
         """Convert user object to dictionary"""

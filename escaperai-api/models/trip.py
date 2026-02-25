@@ -1,4 +1,4 @@
-from app import db
+from database import db
 from datetime import datetime, timezone
 from sqlalchemy.dialects.postgresql import JSON
 

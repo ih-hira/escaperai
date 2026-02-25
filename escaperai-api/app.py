@@ -1,8 +1,14 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import JWTManager
 import os
+
+# Set default environment early so config.py can use it
+if 'FLASK_ENV' not in os.environ:
+    os.environ['FLASK_ENV'] = 'development'
+
 from config import config
+from database import db
 
 app = Flask(__name__)
 
@@ -11,15 +17,43 @@ app_env = os.getenv('FLASK_ENV', 'development')
 app.config.from_object(config[app_env])
 
 # Initialize extensions
-db = SQLAlchemy(app)
+db.init_app(app)
 CORS(app)
+jwt = JWTManager(app)
 
 # Import models after db initialization
 from models import User, Trip
+from routes import auth_bp, trips_bp
+
+# Register blueprints
+app.register_blueprint(auth_bp)
+app.register_blueprint(trips_bp)
+
+# JWT error handlers
+@jwt.expired_token_loader
+def expired_token_callback(jwt_header, jwt_payload):
+    return jsonify({
+        'success': False,
+        'error': 'Token has expired'
+    }), 401
+
+@jwt.invalid_token_loader
+def invalid_token_callback(error):
+    return jsonify({
+        'success': False,
+        'error': 'Invalid token'
+    }), 401
+
+@jwt.unauthorized_loader
+def missing_token_callback(error):
+    return jsonify({
+        'success': False,
+        'error': 'Authorization required. Missing token.'
+    }), 401
 
 @app.route('/')
 def home():
-    return jsonify({"message": "Welcome to EscaperAi API"})
+    return jsonify({"message": "Welcome to EscapeRAI API"})
 
 @app.route('/health')
 def health_check():
