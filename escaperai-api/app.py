@@ -18,7 +18,17 @@ app.config.from_object(config[app_env])
 
 # Initialize extensions
 db.init_app(app)
-CORS(app)
+
+# Initialize CORS with configuration
+cors_config = {
+    "origins": app.config['CORS_ORIGINS'],
+    "methods": app.config['CORS_METHODS'],
+    "allow_headers": app.config['CORS_ALLOW_HEADERS'],
+    "expose_headers": app.config['CORS_EXPOSE_HEADERS'],
+    "supports_credentials": app.config['CORS_SUPPORTS_CREDENTIALS'],
+    "max_age": app.config['CORS_MAX_AGE']
+}
+CORS(app, resources={r"/api/*": cors_config})
 jwt = JWTManager(app)
 
 # Import models after db initialization

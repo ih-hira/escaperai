@@ -32,6 +32,16 @@ from .middleware import (
     protect,
 )
 
+from .itinerary_utils import (
+    generate_default_itinerary,
+    get_date_range,
+    add_activity_to_itinerary,
+    remove_activity_from_itinerary,
+    get_trip_duration,
+    get_activities_count,
+    validate_itinerary_structure,
+)
+
 __all__ = [
     # Security - Password
     'hash_password',
@@ -60,4 +70,12 @@ __all__ = [
     'rate_limit',
     'validate_json',
     'protect',
+    # Itinerary
+    'generate_default_itinerary',
+    'get_date_range',
+    'add_activity_to_itinerary',
+    'remove_activity_from_itinerary',
+    'get_trip_duration',
+    'get_activities_count',
+    'validate_itinerary_structure',
 ]

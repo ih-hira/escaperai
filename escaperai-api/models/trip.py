@@ -19,6 +19,25 @@ class Trip(db.Model):
     def __repr__(self):
         return f'<Trip {self.destination} ({self.start_date.date()})>'
     
+    def generate_default_itinerary(self, template_type: str = 'standard'):
+        """
+        Generate a default itinerary template for this trip.
+        
+        Args:
+            template_type: Type of template - 'standard', 'adventure', 'relaxation', 'cultural'
+        
+        Returns:
+            Generated itinerary dictionary
+        """
+        from utils.itinerary_utils import generate_default_itinerary
+        self.itinerary = generate_default_itinerary(
+            self.destination,
+            self.start_date,
+            self.end_date,
+            template_type
+        )
+        return self.itinerary
+    
     def add_itinerary_item(self, date, title, description, location=None):
         """Add an item to the itinerary"""
         if not self.itinerary:

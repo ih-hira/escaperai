@@ -13,6 +13,7 @@ from utils import (
     owner_only,
     validate_json,
     rate_limit,
+    generate_default_itinerary,
 )
 
 trips_bp = Blueprint('trips', __name__, url_prefix='/api/trips')
@@ -384,19 +385,93 @@ def add_itinerary_item(id):
                 'error': 'Invalid date format. Use ISO format (e.g., 2024-06-05)'
             }), 400
         
-        # Add itinerary item
-        trip.add_itinerary_item(
-            date=date,
-            title=data['title'],
-            description=data['description'],
-            location=data.get('location')
-        )
+        trip.updated_at = datetime.now(timezone.utc)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'data': trip.to_dict()
+        }), 200
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@trips_bp.route('/<int:id>/itinerary/generate', methods=['POST'])
+@auth_required
+def generate_itinerary_template(id):
+    """
+    Generate a default itinerary template for a trip.
+    
+    Protected: Requires valid JWT token AND user must own the trip
+    
+    Request body (optional):
+    {
+        "template_type": "standard"  # Options: 'standard', 'adventure', 'relaxation', 'cultural'
+    }
+    
+    Response:
+    {
+        "success": true,
+        "data": {
+            "id": 1,
+            "destination": "Paris",
+            "itinerary": {
+                "2024-06-01": [
+                    {
+                        "title": "Day 1 - Morning Activity",
+                        "description": "Explore a local attraction or landmark in Paris.",
+                        "location": null
+                    },
+                    ...
+                ],
+                ...
+            },
+            ...
+        }
+    }
+    """
+    try:
+        user_id = g.user_id
+        trip = Trip.query.get(id)
+        
+        if not trip:
+            return jsonify({
+                'success': False,
+                'error': 'Trip not found'
+            }), 404
+        
+        # Check ownership
+        if trip.user_id != user_id:
+            return jsonify({
+                'success': False,
+                'error': 'Access denied. You do not own this trip.'
+            }), 403
+        
+        data = request.get_json() or {}
+        template_type = data.get('template_type', 'standard')
+        
+        # Validate template type
+        valid_types = ['standard', 'adventure', 'relaxation', 'cultural']
+        if template_type not in valid_types:
+            return jsonify({
+                'success': False,
+                'error': f'Invalid template_type. Must be one of: {", ".join(valid_types)}'
+            }), 400
+        
+        # Generate itinerary
+        trip.generate_default_itinerary(template_type)
         
         trip.updated_at = datetime.now(timezone.utc)
         db.session.commit()
         
         return jsonify({
             'success': True,
+            'message': f'Itinerary template generated successfully using "{template_type}" template',
             'data': trip.to_dict()
         }), 200
     

@@ -1,0 +1,46 @@
+<svg width="700" height="200" viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+
+  <defs>
+    <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6C63FF"/>
+      <stop offset="100%" stop-color="#4A3FD9"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Location Pin -->
+  <path d="M90 20
+           C55 20 30 45 30 80
+           C30 130 90 180 90 180
+           C90 180 150 130 150 80
+           C150 45 125 20 90 20 Z"
+        fill="url(#purpleGradient)"/>
+
+  <!-- White circle inside pin -->
+  <circle cx="90" cy="75" r="28" fill="white"/>
+
+  <!-- Check mark -->
+  <path d="M75 75 L88 88 L110 60"
+        stroke="#1f2937"
+        stroke-width="7"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+
+  <!-- Text -->
+  <text x="180" y="105"
+        font-family="Segoe UI, Arial, sans-serif"
+        font-size="64"
+        font-weight="600"
+        fill="#1f2937">
+        Escaper
+  </text>
+
+  <text x="395" y="105"
+        font-family="Segoe UI, Arial, sans-serif"
+        font-size="64"
+        font-weight="600"
+        fill="#6C63FF">
+        Ai
+  </text>
+
+</svg>
