@@ -9,21 +9,32 @@ const getAuthHeaders = () => {
 };
 
 const handleResponse = async (response) => {
-  if (response.status === 401) {
-    localStorage.removeItem('token');
-    window.location.href = '/login';
-    throw new Error('Session expired. Please login again.');
-  }
-
-  if (response.status === 404) {
-    throw new Error('Trip not found');
-  }
-
   const data = await response.json();
+  
   if (!response.ok) {
+    // For 401 errors, check if it's a failed login attempt or session expiration
+    if (response.status === 401) {
+      // If there's an error message like "Invalid email or password", 
+      // it's a login failure - let the component handle it
+      if (data.error && data.error.includes('Invalid')) {
+        const error = new Error(data.error);
+        error.response = { data };
+        error.status = response.status;
+        throw error;
+      }
+      // Otherwise, it's likely a session expiration - redirect to login
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+      throw new Error('Session expired. Please login again.');
+    }
+
+    if (response.status === 404) {
+      throw new Error('Trip not found');
+    }
+
     // Create an error with detailed information
     const error = new Error(data.error || data.message || 'Request failed');
-    error.response = { data }; // Attach full response data for detailed errors
+    error.response = { data };
     error.status = response.status;
     throw error;
   }
@@ -60,11 +71,11 @@ export const api = {
 
   auth: {
     login: async (credentials) => {
-      return api.post('/auth/login', credentials);
+      return api.post('/api/auth/login', credentials);
     },
 
     register: async (userData) => {
-      return api.post('/auth/register', userData);
+      return api.post('/api/auth/register', userData);
     }
   }
 };

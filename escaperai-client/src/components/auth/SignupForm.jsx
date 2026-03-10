@@ -29,7 +29,7 @@ const PASSWORD_REQUIREMENTS = {
 
 const SignupForm = () => {
   const navigate = useNavigate();
-  const { setIsAuthenticated } = useAuth();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -133,14 +133,43 @@ const SignupForm = () => {
       const response = await api.auth.register(userData);
       console.log('Signup response:', response); // Debug log
       
-      // Redirect after successful registration
-      navigate('/login', { 
-        replace: true,
-        state: { 
-          message: 'Registration successful! Please log in.',
-          email: formData.email
+      // Add a small delay to ensure database has persisted the user before attempting login
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Automatically log in after successful registration
+      try {
+        const loginResponse = await api.auth.login({
+          email: formData.email,
+          password: formData.password
+        });
+        console.log('Auto-login response:', loginResponse);
+
+        // Extract token from the login response
+        if (loginResponse.data?.access_token) {
+          login(loginResponse.data);
+          console.log('Auto-login successful, redirecting to dashboard...');
+          navigate('/dashboard', { replace: true });
+        } else {
+          // Login succeeded but no token - redirect to login
+          navigate('/login', { 
+            replace: true,
+            state: { 
+              message: 'Registration successful! Please log in.',
+              email: formData.email
+            }
+          });
         }
-      });
+      } catch (loginErr) {
+        console.error('Auto-login error:', loginErr);
+        // If auto-login fails, redirect to login page
+        navigate('/login', { 
+          replace: true,
+          state: { 
+            message: 'Registration successful! Please log in.',
+            email: formData.email
+          }
+        });
+      }
       
     } catch (err) {
       console.error('Signup error:', err); // Debug log
